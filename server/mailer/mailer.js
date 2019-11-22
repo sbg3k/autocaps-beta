@@ -6,12 +6,11 @@ const get_admission_status = require("./jamb_scraper.js");
 const update_stats = require("../update_stats.js");
 const log_func = require("../logger.js");
 
-const autocapsmail = "autocapsbot@gmail.com";
 const transporter = nodemailer.createTransport({
 	service: "gmail",
 	auth: {
-		user: autocapsmail,
-		pass: "FlyL1k3@B1rd"
+		user: process.env.gmail,
+		pass: process.env.pas
 	}
 })
 
@@ -26,7 +25,7 @@ async function send_mail(email, status){
 	let d = (new Date()).toString();
 	let result = status;
 	let receipt = await transporter.sendMail({
-		from: autocapsmail,
+		from: process.env.gmail,
 		to: email,
 		subject: "Admission status update from AutoCaps",
 		html: `
@@ -51,7 +50,7 @@ ${d}
 	return true;
 }
 
-async function handle_user({mail: jamb, email: personal, password: pwd}){
+async function handle_user({mail: jamb, password: pwd, email: personal}){
 	let err = false;
 	console.log("scraping...");
 	// status variable returns boolean, showing is admission status
@@ -97,7 +96,7 @@ function loop_sessions(){
 		try{
 			let one_hour = 3600000;
 			let min_interval = one_hour * 12;// <- every 12 hours // 0.002778;
-			let count = 0;
+      let count = 0;
 			let avg_time =[0,0];
 			async function run_sessions(){
 				console.log("Running session");
