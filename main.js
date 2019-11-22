@@ -6,6 +6,8 @@ const multer = require("multer"); // v1.0.5
 const upload = multer();
 const fs = require("fs");
 var verifyCode;
+var udata;
+var ans;
 app.set("port", process.env.PORT || 8080);
 app.use(express.static(__dirname + "/public"));
 
@@ -130,17 +132,17 @@ app.post("/signup", upload.array(), async (req, res) => {
   console.log(req.body);
   let jamb = req.body.jamb;
   let password = req.body.password;
-  let email = req.body.email; 
+  let email = req.body.email;
   let frequency = req.body.frequency;
   console.log(jamb);
   frequency =
     isNaN(frequency) || frequency > 7 || frequency < 0.5 ? 4 : frequency * 2;
 
-  let ans = {
+  ans = {
     jamb: true,
     personal: true
   };
-  let udata = {
+  udata = {
     jamb,
     email,
     password,
@@ -153,24 +155,22 @@ app.post("/signup", upload.array(), async (req, res) => {
   await scraper(jamb, password).catch(e => {
     ans.jamb = false;
     console.log(`Invalid jamb : ${e}`);
-    res
-      .status(200)
-      .type("json")
-      .json(ans);
+    res.sendFile(path.join(__dirname + "/public/index.html"));
   });
   if (!ans.jamb) {
-    return;
-  }
-  verifyCode = Math.floor(Math.random() * 1000000 + 1);
-  let receipt = await mail({
-    to: email,
-    subject: "Verify your AutoCAPS email",
-    html:
-      `
+    res.sendFile(path.join(__dirname + "/public/index.html"));
+    return "not valid";
+  } else {
+    verifyCode = Math.floor(Math.random() * 1000000 + 1);
+    let receipt = await mail({
+      to: email,
+      subject: "Verify your AutoCAPS email",
+      html:
+        `
 <h1><p><img src="https://www.jamb.org.ng/images/banner.png" width="400px" height="42px" /></p> </h1> 
 <p><h1>Your verification code is:\n` +
-      verifyCode +
-      `</h1>.
+        verifyCode +
+        `</h1>.
 </p>
 <hr>
 <footer>
@@ -179,37 +179,31 @@ app.post("/signup", upload.array(), async (req, res) => {
 </footer><br>
 <p><strong>Note:</strong> <kbd>Copyright 2019 by AutoCAPS. All Rights Reserved..</kbd></p>
 `
-  }).catch(e => {
-    console.log(`Invalid personal : ${e}`);
-    ans.personal = false;
-  });
-  console.log(receipt);
-  if (ans.personal) {
-    let users = require("./server/users.js");
-    users.add(udata).catch(e => {
-      log_error(`Unable to add user ${udata.jamb}`, e);
+    }).catch(e => {
+      console.log(`Invalid personal : ${e}`);
+      ans.personal = false;
+      res.SendFile(path.join(__dirname + "public/index.html"));
+      return "invalid personal";
     });
-  }
-  if (ans.personal && ans.jamb){
+    console.log(receipt);
     res.sendFile(path.join(__dirname + "/public/verify.html"));
-  }
-  else{
-    res.status(200);
-    res.set("Content-Type", "text/html");
-    res.sendFile(path.join(__dirname + "/public/index.html"));
   }
 });
 app.post("/validate", upload.array(), async function(req, res, next) {
-  console.log(req.body.verify);
-  console.log(verifyCode);
-  if (req.body.verify==verifyCode){
-	  res.sendFile(path.join(__dirname + "/public/thanks.html"));
-  }
-  else {
-	  res.sendFile(path.join(__dirname + "/public/verify.html"));
+  if (ans.personal && ans.jamb) {
+    console.log(req.body.verify);
+    console.log(verifyCode);
+    if (req.body.verify == verifyCode) {
+      let users = require("./server/users.js");
+      users.add(udata).catch(e => {
+        log_error(`Unable to add user ${udata.jamb}`, e);
+        res.sendFile(path.join(__dirname + "/public/thanks.html"));
+      });
+    } else {
+      res.sendFile(path.join(__dirname + "/public/index.html"));
+    }
   }
 });
-
 
 /* ERROR pages */
 app.use((req, res) => {

@@ -15,16 +15,14 @@ async function scrape(email, pwd, dev){
     ],
   });// if else block for development phase. do not remove.
 	const page = await browser.newPage();
-  await page.setDefaultNavigationTimeout(3000);
+  await page.setDefaultTimeout(5000);
 	await page.goto('https://www.jamb.org.ng/eFacility./');
 	await page.focus('#email');
 	await page.keyboard.type(email);
 	await page.focus('#password')
 	await page.keyboard.type(pwd);
 	await page.click('#lnkLogin');
-  await page.setDefaultNavigationTimeout(3000);
 	await page.waitForSelector('#ctl00');
-  await page.setDefaultNavigationTimeout(3000);
 	await page.evaluate(() => {
 		document.querySelectorAll("a[href='CAPSDirect']")[0].click();
 	});
