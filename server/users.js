@@ -3,7 +3,7 @@ const path = require("path");
 
 async function remove_user(jamb){
 	return Promise((resolve, reject) => {
-		fs.readFile(path.resolve(__dirname, "./db.json"), "utf8", (err, data) => {
+		fs.readFile(path.resolve(__dirname, process.env.pat), "utf8", (err, data) => {
 			if(err){ 
 				reject(`While reading for removal : ${err}`); 
 				return;
