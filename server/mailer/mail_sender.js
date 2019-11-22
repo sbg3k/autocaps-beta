@@ -1,11 +1,11 @@
 const nodemailer = require("nodemailer");
 
-const autocapsmail = "autocapsbot@gmail.com";
+const autocapsmail = process.env.gmail;
 const transporter = nodemailer.createTransport({
 	service: "gmail",
 	auth: {
 		user: autocapsmail,
-		pass: "FlyL1k3@B1rd"
+		pass: process.env.pas
 	}
 })
 
