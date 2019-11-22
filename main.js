@@ -194,7 +194,9 @@ app.post("/signup", upload.array(), async (req, res) => {
     res.sendFile(path.join(__dirname + "/public/verify.html"));
   }
   else{
-    res.status(200).type("json").json(ans);
+  	res.status(200);
+  	res.set("Content-Type", "text/html");
+  	res.send("home");
   }
 });
 app.post("/validate", upload.array(), async function(req, res, next) {
